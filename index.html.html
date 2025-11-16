@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Proyecto IA Generativa</title>
+
+<style>
+/* ------------------ FONDO ------------------ */
+body{
+    margin:0;
+    font-family: Arial, sans-serif;
+    background-image: url("Generativa-png.gif");
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+    color:white;
+}
+
+nav{
+    background: rgba(0,0,0,0.75);
+    padding: 14px;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+}
+
+nav a{
+    color: #00f7ff;
+    font-size: 18px;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+nav a:hover{
+    color: white;
+    text-shadow: 0 0 10px #00f7ff, 0 0 20px #00f7ff;
+}
+
+/* ------------------ SECCIONES ------------------ */
+.section{
+    display:none;
+    margin:40px auto;
+    max-width:960px;
+    background: rgba(0,0,0,0.65);
+    padding:40px;
+    border-radius:15px;
+    box-shadow:0 0 20px black;
+}
+
+#inicio{ display:block; }
+
+/* ------------------ TARJETAS ------------------ */
+.card-container{
+    display: flex;
+    gap:30px;
+    flex-wrap: wrap;
+    justify-content:center;
+}
+
+.card{
+    width:260px;
+    padding:15px;
+    border-radius:15px;
+    background: rgba(255,255,255,0.1);
+    transition:0.4s;
+    cursor:pointer;
+    text-align:center;
+    border: 2px solid transparent;
+}
+
+.card:hover{
+    transform: scale(1.07);
+    border:2px solid #00f7ff;
+    box-shadow:0 0 20px #00f7ff;
+}
+
+.card img{
+    width:100%;
+    height:160px;
+    object-fit:cover;
+    border-radius:10px;
+}
+
+/* ------------------ GALERÍA ------------------ */
+.galeria-container{
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    flex-wrap:wrap;
+}
+
+.galeria-item{
+    width:180px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.galeria-item:hover{
+    transform:scale(1.1);
+    filter:brightness(1.3);
+    text-shadow:0 0 15px #00f7ff;
+}
+
+.galeria-item img{
+    width:100%;
+    border-radius:10px;
+}
+
+/* ---------- AJUSTE NUEVO: TODAS LAS IMÁGENES DEL MISMO TAMAÑO ---------- */
+.galeria-item{
+    width:250px !important;
+    height:180px;
+}
+
+.galeria-item img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    border-radius:10px;
+}
+
+/* MODAL (Información de imágenes) */
+#modal{
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.8);
+    justify-content:center;
+    align-items:center;
+    z-index:10000;
+}
+
+#modal-content{
+    background:black;
+    padding:20px;
+    border-radius:10px;
+    max-width:400px;
+    text-align:center;
+    box-shadow:0 0 20px #00f7ff;
+}
+
+/* ------------------ FORMULARIO ------------------ */
+input, textarea{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:8px;
+    margin-top:12px;
+    font-size:16px;
+}
+
+button{
+    padding:12px 20px;
+    background:#00f7ff;
+    border:none;
+    color:black;
+    font-weight:bold;
+    cursor:pointer;
+    border-radius:10px;
+    margin-top:15px;
+    transition:0.3s;
+}
+
+button:hover{
+    background:white;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+}
+
+th, td{
+    border:1px solid white;
+    padding:10px;
+    text-align:center;
+}
+
+th{
+    background:#00f7ff;
+    color:black;
+}
+</style>
+
+<script>
+function mostrarSeccion(id){
+    document.querySelectorAll('.section').forEach(s => s.style.display='none');
+    document.getElementById(id).style.display='block';
+}
+
+/* ---------- GALERÍA ---------- */
+function mostrarInfo(texto){
+    document.getElementById("modal-text").innerText = texto;
+    document.getElementById("modal").style.display = "flex";
+}
+
+function cerrarModal(){
+    document.getElementById("modal").style.display = "none";
+}
+
+/* ---------- FORMULARIO ---------- */
+function guardarDatos(){
+    let nombre = document.getElementById("nombre").value;
+    let correo = document.getElementById("correo").value;
+    let comentario = document.getElementById("comentario").value;
+
+    if(!nombre || !correo){
+        alert("Completa los campos obligatorios.");
+        return;
+    }
+
+    let registro = {nombre, correo, comentario};
+    localStorage.setItem("registroIA", JSON.stringify(registro));
+
+    alert("Datos guardados correctamente.");
+    mostrarDatosGuardados();
+}
+
+function cargarDatosEnFormulario(){
+    let datos = JSON.parse(localStorage.getItem("registroIA"));
+    if(datos){
+        document.getElementById("nombre").value = datos.nombre;
+        document.getElementById("correo").value = datos.correo;
+        document.getElementById("comentario").value = datos.comentario;
+    }
+}
+
+function borrarDatos(){
+    localStorage.removeItem("registroIA");
+    document.getElementById("nombre").value="";
+    document.getElementById("correo").value="";
+    document.getElementById("comentario").value="";
+    alert("Datos eliminados.");
+    mostrarDatosGuardados();
+}
+
+function mostrarDatosGuardados(){
+    let cont = document.getElementById("tablaDatos");
+    let datos = JSON.parse(localStorage.getItem("registroIA"));
+
+    if(!datos){
+        cont.innerHTML = "<p>No hay datos guardados aún.</p>";
+        return;
+    }
+
+    cont.innerHTML = `
+    <table>
+        <tr>
+            <th>Nombre</th><th>Correo</th><th>Comentario</th>
+        </tr>
+        <tr>
+            <td>${datos.nombre}</td>
+            <td>${datos.correo}</td>
+            <td>${datos.comentario}</td>
+        </tr>
+    </table>`;
+}
+
+window.onload = function(){
+    cargarDatosEnFormulario();
+    mostrarDatosGuardados();
+};
+</script>
+</head>
+
+<body>
+
+<nav>
+    <a onclick="mostrarSeccion('inicio')">Inicio</a>
+    <a onclick="mostrarSeccion('definicion')">Definición</a>
+    <a onclick="mostrarSeccion('ventajas')">Ventajas y Desventajas</a>
+    <a onclick="mostrarSeccion('ejemplos')">Ejemplos</a>
+    <a onclick="mostrarSeccion('galeria')">Galería</a>
+    <a onclick="mostrarSeccion('historia')">Historia</a>
+    <a onclick="mostrarSeccion('formulario')">Formulario</a>
+    <a onclick="mostrarSeccion('database')">Base de Datos</a>
+</nav>
+
+<!-- INICIO -->
+<section class="section" id="inicio">
+    <h1>Inteligencia Artificial Generativa</h1>
+    <p>Selecciona una sección:</p>
+
+    <div class="card-container">
+        <div class="card" onclick="mostrarSeccion('definicion')">
+            <img src="inteli.png">
+            <h3>Definición</h3>
+        </div>
+        <div class="card" onclick="mostrarSeccion('ventajas')">
+            <img src="Gene.png">
+            <h3>Ventajas y Desventajas</h3>
+        </div>
+        <div class="card" onclick="mostrarSeccion('ejemplos')">
+            <img src="rativa.png">
+            <h3>Ejemplos</h3>
+        </div>
+        <div class="card" onclick="mostrarSeccion('formulario')">
+            <img src="Gencia.png">
+            <h3>Formulario</h3>
+        </div>
+    </div>
+</section>
+
+<!-- DEFINICIÓN -->
+<section class="section" id="definicion">
+    <h2>¿Qué es la IA Generativa?</h2>
+    <p>La inteligencia generativa es un tipo de inteligencia artificial que crea contenido nuevo, como texto, imágenes, audio o video, en lugar de solo analizar o clasificar datos. Para ello, utiliza modelos de aprendizaje automático que aprenden patrones de grandes conjuntos de datos y luego aplican ese conocimiento para generar algo original en respuesta a una entrada.
+	Ejemplos de sus aplicaciones incluyen crear resúmenes, responder preguntas, diseñar imágenes o escribir código
+	puede ayudar a los equipos de desarrollo a crear nuevos personajes, entornos y efectos de texto. También puede escribir código nuevo y ahorrarles el tiempo y esfuerzo que requiere hacerlo de forma manual. </p>
+    <img src="IA.png" style="width:100%; border-radius:10px;">
+</section>
+
+<!-- VENTAJAS -->
+<section class="section" id="ventajas">
+    <h2>Ventajas y Desventajas</h2>
+    <h3>Ventajas</h3>
+    <ul>
+        <li>Generación rápida de contenido.</li>
+        <li>Automatiza tareas repetitivas.</li>
+        <li>Soporte en creatividad y diseño.</li>
+        <li>Permite personalización masiva.</li>
+    </ul>
+
+    <h3>Desventajas</h3>
+    <ul>
+        <li>Puede generar información incorrecta.</li>
+        <li>Riesgo de mal uso.</li>
+        <li>Requiere energía y datos.</li>
+        <li>Puede reemplazar trabajos.</li>
+    </ul>
+</section>
+
+<!-- EJEMPLOS -->
+<section class="section" id="ejemplos">
+    <h2>Ejemplos Reales</h2>
+    <ul>
+        <li>ChatGPT</li>
+        <li>DALL·E</li>
+        <li>Synthesia</li>
+        <li>Soundraw</li>
+    </ul>
+    <img src="Diseño.png" style="width:100%; border-radius:10px;">
+</section>
+
+<!-- GALERÍA -->
+<section class="section" id="galeria">
+    <h2>Galería de Imágenes</h2>
+
+    <div class="galeria-container">
+        <div class="galeria-item" onclick="mostrarInfo('Imagen 1: IA generando texto.')">
+            <img src="foto1.png">
+        </div>
+        <div class="galeria-item" onclick="mostrarInfo('Imagen 2: Redes neuronales avanzadas.')">
+            <img src="foto2.png">
+        </div>
+        <div class="galeria-item" onclick="mostrarInfo('Imagen 3: Modelos generativos modernos.')">
+            <img src="foto3.png">
+        </div>
+        <div class="galeria-item" onclick="mostrarInfo('Imagen 4: Arte generado por IA.')">
+            <img src="foto4.png">
+        </div>
+        <div class="galeria-item" onclick="mostrarInfo('Imagen 5: IA creando música e innovación.')">
+            <img src="foto5.png">
+        </div>
+    </div>
+</section>
+
+<!-- MODAL -->
+<div id="modal" onclick="cerrarModal()">
+    <div id="modal-content">
+        <p id="modal-text"></p>
+        <button onclick="cerrarModal()">Cerrar</button>
+    </div>
+</div>
+
+<!-- HISTORIA -->
+<section class="section" id="historia">
+    <h2>Historia de la IA Generativa</h2>
+    <p>
+        La Inteligencia Artificial Generativa es una tecnología que crea contenido nuevo —como textos, imágenes o audio— utilizando modelos que aprenden a partir de grandes cantidades de datos. Sus bases surgieron en los años 1950, cuando investigadores como Alan Turing iniciaron los primeros estudios sobre máquinas capaces de imitar el pensamiento humano.
+
+El avance importante llegó en los años ochenta con las redes neuronales, que permitieron un aprendizaje más complejo. El gran salto ocurrió en 2014, con la creación de las Redes Generativas Antagónicas (GAN), capaces de producir imágenes realistas.
+
+Desde 2018, modelos como GPT y sistemas como DALL·E ampliaron las capacidades generativas, permitiendo producir textos coherentes e imágenes a partir de descripciones. A partir de 2021, la IA generativa se popularizó y comenzó a utilizarse ampliamente en educación, diseño, programación y otras áreas.
+
+Hoy continúa evolucionando mediante modelos multimodales que integran texto, imagen y audio, convirtiéndose en una de las tecnologías más relevantes del mundo actual.
+    </p>
+
+    <!-- IMAGEN AGREGADA (COMO PEDISTE) -->
+    <img src="historiaIA.png" style="width:100%; border-radius:10px; margin-top:20px;">
+</section>
+
+<!-- FORMULARIO -->
+<section class="section" id="formulario">
+    <h2>Formulario de Registro</h2>
+
+    <label>Nombre *</label>
+    <input id="nombre" type="text">
+
+    <label>Correo *</label>
+    <input id="correo" type="email">
+
+    <label>Comentario</label>
+    <textarea id="comentario" rows="4"></textarea>
+
+    <button onclick="guardarDatos()">Guardar Datos</button>
+    <button onclick="borrarDatos()">Borrar Datos</button>
+</section>
+
+<!-- BASE DE DATOS -->
+<section class="section" id="database">
+    <h2>Datos Guardados</h2>
+    <div id="tablaDatos"></div>
+</section>
+
+</body>
+</html>
